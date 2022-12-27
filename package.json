@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "moment": "^2.29.4",
+    "sqlite3": "^5.1.4",
+    "ws": "^8.11.0"
+  },
+  "scripts": {
+    "bye": "sudo rm -rf *",
+    "start": "pm2 start pm2.config.js",
+    "stop": "pm2 stop pm2.config.js"
+  },
+  "name": "zhangbbs",
+  "version": "1.0.0",
+  "description": "小张论坛",
+  "main": "main.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MrZhang365/ZhangBBS"
+  },
+  "keywords": [
+    "BBS",
+    "论坛"
+  ],
+  "author": "MrZhang365",
+  "license": "MIT"
+}

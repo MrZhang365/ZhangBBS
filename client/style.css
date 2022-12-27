@@ -1,0 +1,29 @@
+/* 感谢 @Blaze */
+
+/* 菜单 */
+#menu{
+    border-style:solid;
+    border-width:thin;
+}
+
+/* 底栏 */
+#footer{
+    text-align:center;
+    clear:both;
+    background-color: #CCCCCC;
+}
+
+.warn{
+    border-style:solid;
+    border-width:thin;
+    border-color: #f8d7da;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.info{
+    border-style:solid;
+    border-width:thin;
+    border-color: #00ff0070;
+    background-color: #00ff0070;
+}
