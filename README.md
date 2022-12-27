@@ -19,11 +19,12 @@
 ### 安装与运行  
 1. 克隆此仓库
 2. 切换到仓库目录下，执行 `npm install`
-3. 执行 `npm start` 来启动论坛服务器，执行 `npm stop` 可以关闭论坛服务器，`npm restart` 可以重启论坛服务器
-4. 论坛的WebSocket端口号默认为8848~~（钛金端口）~~，HTTP端口号为81
+3. 修改 `main.js` 里面的第6行代码，把 `passwordSalt` 改成其他的盐值
+4. 执行 `npm start` 来启动论坛服务器，执行 `npm stop` 可以关闭论坛服务器，`npm restart` 可以重启论坛服务器
+5. 论坛的WebSocket端口号默认为8848钛金端口，HTTP端口号为81
 
 ## 其他  
 - 请不要做出违反许可证的行为
 - ~~请不要把精力放在本仓库上，不要给本仓库点star，不要fork本仓库，不要克隆本仓库，不要使用小张论坛。为什么？因为这是个垃圾代码，不值得一试。~~
-- 如果你真的对这~~一大堆垃圾~~仓库感兴趣，您可以尝试点个star，然后follow~~（SB）~~MrZhang365
+- 如果你真的对这~~一大堆垃圾~~仓库感兴趣，您可以尝试点个star，然后follow MrZhang365
 - 部分编程习惯借鉴自 [HackChat](https://github.com/hack-chat/main)
