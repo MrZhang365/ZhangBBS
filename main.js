@@ -2,8 +2,10 @@ const websocket = require('ws')
 const sqlite = require('./sqlite')
 const crypto = require('crypto');
 const moment = require('moment')
+const rateLimiter = require('./RateLimiter')
 
-const passwordSalt = 'put your salt here!'
+var police = new rateLimiter()    //《警察》
+const passwordSalt = 'ZhangSoft@102210'
 
 class WebSocketServer extends websocket.Server{
     constructor(serverPort,commands){
@@ -22,6 +24,12 @@ class WebSocketServer extends websocket.Server{
         })
     }
     onMessage(socket,data){
+        if (police.frisk(socket.address,0)){
+            return server.reply({
+                cmd:'warn',
+                text:'您的操作过于频繁或被封禁'
+            },socket)
+        }
         const message = data.toString()
         try{
             var payload = JSON.parse(message)
@@ -60,6 +68,12 @@ const db = new sqlite.SqliteDB('bbs.db')
 
 var functions = {
     login: async function(server,socket,args){
+        if (police.frisk(socket.address,5)){
+            return server.reply({
+                cmd:'warn',
+                text:'您登录的速度过快，请稍后重试'
+            },socket)
+        }
         if (!args.name || !args.password || typeof args.name !== 'string' || typeof args.password !== 'string'){
             return server.reply({
                 cmd:'warn',
@@ -101,6 +115,12 @@ var functions = {
         })
     },
     reg: async function(server,socket,args){
+        if (police.frisk(socket.address),10){
+            return server.reply({
+                cmd:'warn',
+                text:'您注册账号过于频繁，请稍后再试'
+            },socket)
+        }
         if (!args.name || !args.password || typeof args.name !== 'string' || typeof args.password !== 'string'){
             return server.reply({
                 cmd:'warn',
@@ -132,6 +152,12 @@ var functions = {
         })
     },
     get: async function(server,socket,args){
+        if (police.frisk(socket.address,1)){
+            return server.reply({
+                cmd:'warn',
+                text:'您请求文章过于频繁，请稍后再试'
+            },socket)
+        }
         if (!args.path || typeof args.path !== 'string'){
             return server.reply({
                 cmd:'warn',
@@ -185,12 +211,12 @@ var functions = {
         })
     },
     publish: async function(server,socket,args){
-        /*
-        return server.reply({
-            cmd:'info',
-            text:'抱歉，发帖功能正在编写中，敬请期待哦'
-        },socket)
-        */
+        if (police.frisk(socket.address,10)){
+            return server.reply({
+                cmd:'warn',
+                text:'您发帖过于频繁，请稍后再试'
+            },socket)
+        }
         if (!socket.userInfo){
             return server.reply({
                 cmd:'warn',
