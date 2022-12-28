@@ -283,18 +283,20 @@ var functions = {
         clearContent()
         var i = 0
         for (i in args.result){
-            var h2El = document.createElement('h2')
-            var titleLink = document.createElement('a')
+            let h2El = document.createElement('h2')
+            let titleLink = document.createElement('a')
             titleLink.textContent = args.result[i].title
+            titleLink.id = args.result[i].id
             titleLink.onclick = function(e){
-                getWork(args.result[i].id)
+                //console.log(e)
+                getWork(e.target.id)
             }
             h2El.appendChild(titleLink)
-            var writerEl = document.createElement('p')
+            let writerEl = document.createElement('p')
             writerEl.textContent = 'By @' + args.result[i].writer
-            var timeEl = document.createElement('p')
+            let timeEl = document.createElement('p')
             timeEl.textContent = '写于 ' + args.result[i].time
-            var contentEl = document.getElementById('content')
+            let contentEl = document.getElementById('content')
             contentEl.appendChild(h2El)
             contentEl.appendChild(writerEl)
             contentEl.appendChild(timeEl)
