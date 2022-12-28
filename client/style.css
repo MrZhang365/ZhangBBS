@@ -27,3 +27,10 @@
     border-color: #00ff0070;
     background-color: #00ff0070;
 }
+
+.admin{
+    background-color: #d73737;
+    color: #ffffff;
+    font-size: 15px;
+    border-radius: 10px;
+}

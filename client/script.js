@@ -245,6 +245,8 @@ function writePage(){
             title: titleInput.value,
             content: userInput.value
         })
+        e.target.textContent = '正在发布，如果长时间无反应则可能需要刷新重试'
+        e.target.disabled = true
     }
 }
 
@@ -292,6 +294,14 @@ var functions = {
                 getWork(e.target.id)
             }
             h2El.appendChild(titleLink)
+            if (args.result[i].admin){
+                var adminDiv = document.createElement('div')
+                var admin = document.createElement('b')
+                admin.textContent = '站长帖'
+                admin.classList.add('admin')
+                adminDiv.appendChild(admin)
+                h2El.appendChild(adminDiv)
+            }
             let writerEl = document.createElement('p')
             writerEl.textContent = 'By @' + args.result[i].writer
             let timeEl = document.createElement('p')
@@ -310,6 +320,14 @@ var functions = {
         clearContent()
         var title = document.createElement('h1')
         title.textContent = args.result.title
+        if (args.result.admin){
+            var adminDiv = document.createElement('div')
+            var admin = document.createElement('b')
+            admin.textContent = '站长帖'
+            admin.classList.add('admin')
+            adminDiv.appendChild(admin)
+            title.appendChild(adminDiv)
+        }
         var writer = document.createElement('h6')
         writer.textContent = 'By @' + args.result.writer
         var content = document.createElement('div')
@@ -322,6 +340,17 @@ var functions = {
         contentEl.appendChild(content)
         contentEl.appendChild(document.createElement('br'))
         contentEl.appendChild(timeEl)
+    },
+    goto: function (args){
+        if (args.target === 'home'){
+            document.getElementById('go-home').click()
+        }else if (args.target === 'me'){
+            document.getElementById('me').click()
+        }else if (args.target === 'write'){
+            document.getElementById('write').click()
+        }else if (args.target === 'about'){
+            document.getElementById('about').click()
+        }
     }
 }
 

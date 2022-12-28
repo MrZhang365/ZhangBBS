@@ -102,7 +102,8 @@ var functions = {
                 },socket)
             }
             socket.userInfo = {
-                name: args.name.toLowerCase()
+                name: args.name.toLowerCase(),
+                utype: ret[0].utype,
             }
             server.reply({
                 cmd:'info',
@@ -115,7 +116,8 @@ var functions = {
         })
     },
     reg: async function(server,socket,args){
-        if (police.frisk(socket.address),10){
+        if (police.frisk(socket.address,7)){
+            console.log(police.search(socket.address).score)
             return server.reply({
                 cmd:'warn',
                 text:'您注册账号过于频繁，请稍后再试'
@@ -142,8 +144,9 @@ var functions = {
                     text:'已经有人使用了此用户名，请更换一个再试'
                 },socket)
             }
-            var tileData = [[args.name.toLowerCase(),encoded,0,socket.address,moment().format('YYYY-MM-DD HH:mm:ss')]]
-            var insertTileSql = "insert into users(name,password,banned,ip,time) values(?,?,?,?,?)"
+            //utype的值可以是user或admin，user代表普通用户，admin代表站长，站长发的帖子会被标记为站长帖
+            var tileData = [[args.name.toLowerCase(),encoded,0,socket.address,moment().format('YYYY-MM-DD HH:mm:ss'),'user']]
+            var insertTileSql = "insert into users(name,password,banned,ip,time,utype) values(?,?,?,?,?,?)"
             db.insertData(insertTileSql, tileData);
             server.reply({
                 cmd:'info',
@@ -190,6 +193,7 @@ var functions = {
                         title: ret[i].title,
                         writer: ret[i].writer,
                         time: ret[i].time,
+                        admin: Boolean(ret[i].admin),
                     })
                 }
                 server.reply({
@@ -205,6 +209,7 @@ var functions = {
                         writer: ret[0].writer,
                         time: ret[0].time,
                         content: ret[0].content,
+                        admin: Boolean(ret[0].admin),
                     }
                 },socket)
             }
@@ -244,12 +249,20 @@ var functions = {
                 },socket)
             }
             const id = Math.random().toString(36).substr(2, 8);
-            var tileData = [[id,args.title,socket.userInfo.name,args.content,moment().format('YYYY-MM-DD HH:mm:ss'),0,socket.address]]
-            var insertTileSql = "insert into works(id,title,writer,content,time,banned,ip) values(?,?,?,?,?,?,?);"
+            var admin = 0
+            if (socket.userInfo.utype === 'owner'){
+                admin = 1
+            }
+            var tileData = [[id,args.title,socket.userInfo.name,args.content,moment().format('YYYY-MM-DD HH:mm:ss'),0,socket.address,admin]]
+            var insertTileSql = "insert into works(id,title,writer,content,time,banned,ip,admin) values(?,?,?,?,?,?,?,?);"
             db.insertData(insertTileSql, tileData);
             server.reply({
                 cmd:'info',
                 text:'恭喜，发帖成功，请再接再厉！'
+            },socket)
+            server.reply({
+                cmd:'goto',
+                target: 'home'
             },socket)
         })
     }
