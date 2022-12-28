@@ -24,6 +24,12 @@
 5. 执行 `npm start` 来启动论坛服务器，执行 `npm stop` 可以关闭论坛服务器，`npm restart` 可以重启论坛服务器
 6. 论坛的WebSocket端口号默认为8848钛金端口，HTTP端口号为81
 
+## 高级用法  
+- 设置站长身份：执行 `sqlite3 bbs.db` 打开数据库，随后执行 `update users set utype = 'admin' where name = '你的用户名';  --设置站长身份，这样你发布的帖子会被自动添加“站长帖”标签`
+- 封禁指定用户（禁止指定用户登录和发帖）：执行 `sqlite3 bbs.db` 打开数据库，随后执行 `update users set banned = 1 where name = '目标用户名';`
+- 解除封禁指定用户（取消禁止指定用户登录和发帖）：执行 `sqlite3 bbs.db` 打开数据库，随后执行 `update users set banned = 0 where name = '目标用户名';`
+- **注意：未来将会推出管理面板**
+
 ## 其他  
 - 请不要做出违反许可证的行为
 - ~~请不要把精力放在本仓库上，不要给本仓库点star，不要fork本仓库，不要克隆本仓库，不要使用小张论坛。为什么？因为这是个垃圾代码，不值得一试。~~
