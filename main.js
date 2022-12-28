@@ -5,7 +5,7 @@ const moment = require('moment')
 const rateLimiter = require('./RateLimiter')
 
 var police = new rateLimiter()    //《警察》
-const passwordSalt = 'ZhangSoft@102210'
+const passwordSalt = 'put your salt here!'
 
 class WebSocketServer extends websocket.Server{
     constructor(serverPort,commands){
