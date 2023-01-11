@@ -260,6 +260,21 @@ function getWork(id){
     })
 }
 
+function getTags(text){
+    var p = document.createElement('p')
+    text.split(' ').forEach((c) => {
+        if (!c){
+            return
+        }
+        var tag = document.createElement('b')
+        tag.textContent = c
+        tag.classList.add('tag')
+        p.appendChild(tag)
+        p.innerHTML += ' '
+    })
+    return p
+}
+
 var functions = {
     info: function(args){
         pushInfo(args.text)
@@ -294,13 +309,12 @@ var functions = {
                 getWork(e.target.id)
             }
             h2El.appendChild(titleLink)
+            var tagText = ''
             if (args.result[i].admin){
-                var adminDiv = document.createElement('div')
-                var admin = document.createElement('b')
-                admin.textContent = '站长帖'
-                admin.classList.add('admin')
-                adminDiv.appendChild(admin)
-                h2El.appendChild(adminDiv)
+                tagText += '站长帖 '
+            }
+            if (args.result[i].banned){
+                tagText += '已锁定 '
             }
             let writerEl = document.createElement('p')
             writerEl.textContent = 'By @' + args.result[i].writer
@@ -308,6 +322,9 @@ var functions = {
             timeEl.textContent = '写于 ' + args.result[i].time
             let contentEl = document.getElementById('content')
             contentEl.appendChild(h2El)
+            if (tagText){
+                contentEl.appendChild(getTags(tagText))
+            }
             contentEl.appendChild(writerEl)
             contentEl.appendChild(timeEl)
             contentEl.appendChild(document.createElement('hr'))
@@ -320,15 +337,14 @@ var functions = {
         clearContent()
         var title = document.createElement('h1')
         title.textContent = args.result.title
+        var tagText = ''
         if (args.result.admin){
-            var adminDiv = document.createElement('div')
-            var admin = document.createElement('b')
-            admin.textContent = '站长帖'
-            admin.classList.add('admin')
-            adminDiv.appendChild(admin)
-            title.appendChild(adminDiv)
+            tagText += '站长帖 '
         }
-        var writer = document.createElement('h6')
+        if (args.result.banned){
+            tagText += '已锁定'
+        }
+        var writer = document.createElement('h4')
         writer.textContent = 'By @' + args.result.writer
         var content = document.createElement('div')
         content.innerHTML = md.render(args.result.content)
@@ -336,10 +352,54 @@ var functions = {
         timeEl.textContent = '写于 ' + args.result.time
         var contentEl = document.getElementById('content')
         contentEl.appendChild(title)
+        if (tagText){
+            contentEl.appendChild(getTags(tagText))
+        }
         contentEl.appendChild(writer)
         contentEl.appendChild(content)
         contentEl.appendChild(document.createElement('br'))
         contentEl.appendChild(timeEl)
+
+        //评论区
+        contentEl.append(document.createElement('hr'))
+        var commentInput = document.createElement('textarea')
+        commentInput.type = 'text'
+        commentInput.placeholder = '评论千万条，文明第一条'
+        contentEl.appendChild(commentInput)
+        var sendComment = document.createElement('button')
+        sendComment.textContent = '发表评论'
+        sendComment.onclick = e => {
+            if (ws.readyState !== 1){
+                return pushWarn('抱歉，目前无法和服务器取得联系')
+            }
+            if (!commentInput.value){
+                return pushWarn('所以你想表达什么？')
+            }
+            if (!window.userInfo || !window.userInfo.logined || !ws.logined){
+                return pushWarn('登录后才能发帖哦')
+            }
+            ws.sendJSON({
+                cmd:'comment',
+                id:args.result.id,
+                content: commentInput.value
+            })
+        }
+        contentEl.appendChild(sendComment)
+        document.createElement('input')
+        args.result.comments.forEach((c) => {
+            var commentDiv = document.createElement('div')
+            var commentWriter = document.createElement('h2')
+            commentWriter.textContent = c.writer
+            commentDiv.appendChild(commentWriter)
+            var contentDiv = document.createElement('div')
+            contentDiv.innerHTML = md.render(c.content)
+            commentDiv.appendChild(contentDiv)
+            var timeH5 = document.createElement('h6')
+            timeH5.textContent = '发表于 '+c.time
+            commentDiv.appendChild(timeH5)
+            contentEl.appendChild(commentDiv)
+            contentEl.appendChild(document.createElement('hr'))
+        })
     },
     goto: function (args){
         if (args.target === 'home'){

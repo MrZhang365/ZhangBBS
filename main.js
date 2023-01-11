@@ -5,7 +5,7 @@ const moment = require('moment')
 const rateLimiter = require('./RateLimiter')
 
 var police = new rateLimiter()    //《警察》
-const passwordSalt = 'put your salt here!'
+const passwordSalt = 'put your salt here'
 
 class WebSocketServer extends websocket.Server{
     constructor(serverPort,commands){
@@ -194,6 +194,7 @@ var functions = {
                         writer: ret[i].writer,
                         time: ret[i].time,
                         admin: Boolean(ret[i].admin),
+                        banned: Boolean(ret[i].banned),
                     })
                 }
                 server.reply({
@@ -201,22 +202,36 @@ var functions = {
                     result: works.reverse()
                 },socket)
             }else{
-                server.reply({
-                    cmd:'setWork',
-                    result: {
-                        id: ret[0].id,
-                        title: ret[0].title,
-                        writer: ret[0].writer,
-                        time: ret[0].time,
-                        content: ret[0].content,
-                        admin: Boolean(ret[0].admin),
+                db.awaitQueryData(`select * from comment where work = '${args.path}';`).then(comments => {    //好耶，是回调地狱
+                    var c = []
+                    var j = 0
+                    for (j in comments){
+                        c.push({
+                            writer: comments[j].writer,
+                            content: comments[j].content,
+                            time: comments[j].time,
+                            admin: Boolean(comments[j].admin)
+                        })
                     }
-                },socket)
+                    server.reply({
+                        cmd:'setWork',
+                        result: {
+                            id: ret[0].id,
+                            title: ret[0].title,
+                            writer: ret[0].writer,
+                            time: ret[0].time,
+                            content: ret[0].content,
+                            admin: Boolean(ret[0].admin),
+                            banned: Boolean(ret[0].banned),
+                            comments: c,
+                        }
+                    },socket)
+                })
             }
         })
     },
     publish: async function(server,socket,args){
-        if (police.frisk(socket.address,10)){
+        if (police.frisk(socket.address,5)){
             return server.reply({
                 cmd:'warn',
                 text:'您发帖过于频繁，请稍后再试'
@@ -264,6 +279,72 @@ var functions = {
                 cmd:'goto',
                 target: 'home'
             },socket)
+        })
+    },
+    comment: async function(server,socket,args){
+        if (police.frisk(socket.address,5)){
+            return server.reply({
+                cmd:'warn',
+                text:'您发表评论过于频繁，请稍后再试'
+            },socket)
+        }
+        if (!socket.userInfo){
+            return server.reply({
+                cmd:'warn',
+                text:'我不知道你是谁，但是我知道你应该登录'
+            },socket)
+        }
+        if (typeof args.id !== 'string' || typeof args.content !== 'string' || !args.id || !args.content){
+            return server.reply({
+                cmd:'warn',
+                text:'您提供的数据无效'
+            },socket)
+        }
+        if (!/^[a-zA-Z0-9]{1,10}$/.test(args.id)){
+            return server.reply({
+                cmd:'warn',
+                text:'您提供的数据无效'
+            },socket)
+        }
+        const sql = `select * from users where name = '${socket.userInfo.name.toLowerCase()}';`
+        await db.awaitQueryData(sql).then(ret => {
+            if (ret.length === 0){
+                return server.reply({
+                    cmd:'warn',
+                    text:'哎呀，服务器内部出现身份验证错误，我们暂时无法在数据库中找到你的个人档案，请联系站长来报告此问题。'
+                },socket)
+            }
+            if (ret[0].banned){
+                return server.reply({
+                    cmd:'warn',
+                    text:`抱歉，您（${socket.userInfo.name.toLowerCase()}）已被站长封禁，目前无法发表评论。如需解封，请联系站长。`
+                },socket)
+            }
+            var admin = 0
+            if (socket.userInfo.utype === 'owner'){
+                admin = 1
+            }
+            db.awaitQueryData(`select * from works where id = '${args.id}';`).then(ret => {
+                if (ret.length === 0){
+                    return server.reply({
+                        cmd:'warn',
+                        text:`文章不存在`
+                    },socket)
+                }
+                if (ret[0].banned){
+                    return server.reply({
+                        cmd:'warn',
+                        text:`被锁定的文章的评论区暂不开放`
+                    },socket)
+                }
+                var tileData = [[args.content,socket.userInfo.name.toLowerCase(),moment().format('YYYY-MM-DD HH:mm:ss'),socket.address,args.id,admin]]
+                var insertTileSql = "insert into comment(content,writer,time,ip,work,admin) values(?,?,?,?,?,?);"
+                db.insertData(insertTileSql, tileData);
+                server.reply({
+                    cmd:'info',
+                    text:'评论发表成功！'
+                },socket)
+            })
         })
     }
 }

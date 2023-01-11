@@ -1,7 +1,8 @@
 module.exports = {
   apps : [{
     name      : 'zhangbbs-client',
-    script    : 'client-server.js',
+    script    : './node_modules/http-server/bin/http-server',
+    args: './client -p 81',
     instances: 1,
     autorestart: true,
     max_memory_restart: '1G',
@@ -15,7 +16,7 @@ module.exports = {
     }
   }, {
     name: 'zhangbbs-server',
-    script: 'main.js',
+    script: './main.js',
     instances: 1,
     autorestart: true,
     watch: false,
